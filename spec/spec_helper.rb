@@ -14,6 +14,9 @@
 # users commonly want.
 #
 
+require 'simplecov'
+SimpleCov.start 'rails'
+
 require 'capybara/rspec'
 
 # HAS REPLACED THE NEED FOR db:test:prepare
