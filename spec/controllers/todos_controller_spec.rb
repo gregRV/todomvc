@@ -23,22 +23,21 @@ RSpec.describe TodosController, :type => :controller do
 
 	describe "#create" do
 		context "with valid todo info" do
-			it "creates a new todo" do
-				user = FactoryGirl.create(:valid_user)
+			before(:each) do
+				@user = FactoryGirl.create(:valid_user)
 				#stubbing current_user helper method!
-				allow(controller).to receive(:current_user) {user}
-				#note how params are passed in this POST!
-				expect{
-					post "create", {user_id: user.id, todo: {title: 'First Title', body: 'First Todo'}}
-				}.to change(Todo, :count).by(1)
+				allow(controller).to receive(:current_user) {@user}
+			end
+
+			#note how params are passed in this POST!
+			subject {post "create", {user_id: @user.id, todo: FactoryGirl.attributes_for(:valid_todo)}}
+
+			it "creates a new todo" do
+				expect{subject}.to change(Todo, :count).by(1)
 			end
 
 			it "redirects to todos#show" do
-				user = FactoryGirl.create(:valid_user)
-				#stubbing current_user helper method!
-				allow(controller).to receive(:current_user) {user}
-				#note how params are passed in this POST!
-				post "create", {user_id: user.id, todo: {title: 'First Title', body: 'First Todo'}}
+				subject
 				expect(response).to redirect_to(:action => :show, :id => assigns(:todo).id)
 			end
 		end
