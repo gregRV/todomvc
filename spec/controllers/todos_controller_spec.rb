@@ -41,5 +41,23 @@ RSpec.describe TodosController, :type => :controller do
 				expect(response).to redirect_to(:action => :show, :id => assigns(:todo).id)
 			end
 		end
+
+		context "with invalid todo info" do
+			before(:each) do
+				@user = FactoryGirl.create(:valid_user)
+				allow(controller).to receive(:current_user) {@user}
+			end
+
+			subject {post "create", {user_id: @user.id, todo: FactoryGirl.attributes_for(:invalid_todo)}}
+
+			it "does not create a new todo" do
+				expect{subject}.not_to change(Todo, :count)
+			end
+
+			it "redirects to root path" do
+				subject
+				expect(response).to redirect_to(root_path)
+			end
+		end
 	end
 end

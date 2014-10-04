@@ -5,4 +5,9 @@ FactoryGirl.define do
   	title 'Some title'
   	body 'Some body'
   end
+
+  factory :invalid_todo, :class => Todo do
+  	title ''
+  	body 'invalid because missing title'
+  end
 end
