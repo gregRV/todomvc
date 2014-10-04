@@ -48,12 +48,17 @@ RSpec.describe SessionsController, :type => :controller do
 			#first hash is params, second is session
 			delete "destroy", { id: 1 }, { user_id: 2 }
 		end
+
 		it "sets session[:user_id] to nil" do
 			expect(session[:user_id]).to be_nil
 		end
 
 		it "redirects to root path" do
 			expect(response).to redirect_to("/")
+		end
+
+		it "displays a notice" do
+			expect(flash[:notice]).to have_content("Logged out")
 		end
 	end
 end
