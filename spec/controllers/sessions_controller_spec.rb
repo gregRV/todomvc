@@ -42,4 +42,18 @@ RSpec.describe SessionsController, :type => :controller do
 			end
 		end
 	end
+
+	describe "#destroy" do
+		before(:each) do
+			#first hash is params, second is session
+			delete "destroy", { id: 1 }, { user_id: 2 }
+		end
+		it "sets session[:user_id] to nil" do
+			expect(session[:user_id]).to be_nil
+		end
+
+		it "redirects to root path" do
+			expect(response).to redirect_to("/")
+		end
+	end
 end
