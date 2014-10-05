@@ -26,6 +26,12 @@ class TodosController < ApplicationController
 		redirect_to user_todo_path(@todo.user, @todo)
 	end
 
+	# def destroy
+	# 	@todo = Todo.find(params[:id])
+	# 	@todo.destroy
+	# 	redirect_to root_path
+	# end
+
 	private
 
 	def todos_params

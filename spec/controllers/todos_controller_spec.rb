@@ -112,4 +112,23 @@ RSpec.describe TodosController, :type => :controller do
 			end
 		end
 	end
+
+	# describe "#destroy" do
+	# 	let!(:todo_del) {FactoryGirl.create(:valid_user)}
+
+	# 	it "changes Todo count by -1" do
+	# 		# with stub, still saying count is being changed by 0
+	# 		allow(Todo).to receive(:find).and_return(todo_del)
+	# 		# without this stub, it gives the error that ActiveRecord
+	# 		# cant find Todo with 'id'= (some number)
+	# 		expect{
+	# 			delete "destroy", { user_id: user.id, id: todo_del.id }
+	# 		}.to change(Todo, :count).by(-1)
+	# 	end
+	# end
 end
+
+
+
+
+
