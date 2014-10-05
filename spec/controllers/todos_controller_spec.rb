@@ -62,36 +62,37 @@ RSpec.describe TodosController, :type => :controller do
 	end
 
 	describe "#edit" do
-		it "renders edit template" do
-			user = FactoryGirl.create(:valid_user)
-			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
-			#dont forget to stub current_user!
-			allow(controller).to receive(:current_user) {user}
-			get "edit", {user_id: user.id, id: todo.id}
-			expect(response).to render_template("edit")
+		#do not place lets or subjects in before hooks, it'd be redundant!
+		let(:user) { FactoryGirl.create(:valid_user) }
+		let(:todo) { FactoryGirl.create(:valid_todo, user_id: user.id) }
+		subject {get "edit", {user_id: user.id, id: todo.id}}
+
+		context "with valid info" do
+			it "renders edit template" do
+				#dont forget to stub current_user!
+				allow(controller).to receive(:current_user) {user}
+				subject
+				expect(response).to render_template("edit")
+			end
+
+			it "finds the correct todo" do
+				subject
+				expect(assigns(:todo).id).to eq(todo.id)
+			end
 		end
 
-		it "finds the correct todo" do
-			user = FactoryGirl.create(:valid_user)
-			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
-			get "edit", {user_id: user.id, id: todo.id}
-			expect(assigns(:todo).id).to eq(todo.id)
-		end
+		context "with invalid info" do
+			it "redirects to todo#show" do
+				allow(controller).to receive(:current_user) {nil}
+				subject
+				expect(response).to redirect_to(:action => :show, :user_id => user.id, :id => todo.id)
+			end
 
-		it "redirects to todo#show" do
-			user = FactoryGirl.create(:valid_user)
-			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
-			allow(controller).to receive(:current_user) {nil}
-			get "edit", {user_id: user.id, id: todo.id}
-			expect(response).to redirect_to(:action => :show, :user_id => user.id, :id => todo.id)
-		end
-
-		it "displays a notice unless logged in" do
-			user = FactoryGirl.create(:valid_user)
-			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
-			allow(controller).to receive(:current_user) {nil}
-			get "edit", {user_id: user.id, id: todo.id}
-			expect(flash[:notice]).to have_content("Access forbidden")
+			it "displays a notice unless logged in" do
+				allow(controller).to receive(:current_user) {nil}
+				subject
+				expect(flash[:notice]).to have_content("Access forbidden")
+			end
 		end
 	end
 
