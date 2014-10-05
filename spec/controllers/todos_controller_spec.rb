@@ -60,4 +60,60 @@ RSpec.describe TodosController, :type => :controller do
 			end
 		end
 	end
+
+	describe "#edit" do
+		it "renders edit template" do
+			user = FactoryGirl.create(:valid_user)
+			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+			#dont forget to stub current_user!
+			allow(controller).to receive(:current_user) {user}
+			get "edit", {user_id: user.id, id: todo.id}
+			expect(response).to render_template("edit")
+		end
+
+		it "finds the correct todo" do
+			user = FactoryGirl.create(:valid_user)
+			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+			get "edit", {user_id: user.id, id: todo.id}
+			expect(assigns(:todo).id).to eq(todo.id)
+		end
+
+		it "redirects to todo#show" do
+			user = FactoryGirl.create(:valid_user)
+			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+			allow(controller).to receive(:current_user) {nil}
+			get "edit", {user_id: user.id, id: todo.id}
+			expect(response).to redirect_to(:action => :show, :user_id => user.id, :id => todo.id)
+		end
+
+		it "displays a notice unless logged in" do
+			user = FactoryGirl.create(:valid_user)
+			todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+			allow(controller).to receive(:current_user) {nil}
+			get "edit", {user_id: user.id, id: todo.id}
+			expect(flash[:notice]).to have_content("Access forbidden")
+		end
+	end
+
+	describe "#update" do
+		context "with valid info" do
+			it "updates the todo" do
+				user = FactoryGirl.create(:valid_user)
+				todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+				expect{
+					patch "update", {user_id: user.id, id: todo.id, todo: {title: 'Updated Title'}}
+					todo.reload
+				}.to change(todo, :title).to("Updated Title")
+			end
+
+			it "redirects to todo#show" do
+				user = FactoryGirl.create(:valid_user)
+				todo = FactoryGirl.create(:valid_todo, user_id: user.id)
+				patch "update", {user_id: user.id, id: todo.id, todo: {title: 'Updated Title'}}
+				#NEED TO CALL redirect_to ON response!! If called on above line as 'subject'
+				#will give error "Expected response to be a <redirect>, but was <200>"
+				expect(response).to redirect_to(:action => :show, user_id: user.id, :id => todo.id)
+			end
+		end
+	end
 end

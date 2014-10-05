@@ -12,6 +12,20 @@ class TodosController < ApplicationController
 		redirect_to root_path
 	end
 
+	def edit
+		@todo = Todo.find(params[:id])
+		unless @todo && (current_user == @todo.user)
+			flash[:notice] = "Access forbidden"
+			redirect_to user_todo_path(@todo.user, @todo) and return
+		end
+	end
+
+	def update
+		@todo = Todo.find(params[:id])
+		@todo.update(todos_params)
+		redirect_to user_todo_path(@todo.user, @todo)
+	end
+
 	private
 
 	def todos_params
