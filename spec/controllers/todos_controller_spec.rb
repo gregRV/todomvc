@@ -1,36 +1,39 @@
 require 'rails_helper'
 
 RSpec.describe TodosController, :type => :controller do
+	#do not place lets or subjects in before hooks, it'd be redundant!
+	let(:user) { FactoryGirl.create(:valid_user) }
+	let(:todo) { FactoryGirl.create(:valid_todo, user_id: user.id) }
+
 	describe "#new" do
+		subject { get "new", {user_id: user.id} }
+
+		before(:each) do
+			subject
+		end
+
 		it "renders the correct template" do
-			user = FactoryGirl.create(:valid_user)
-			get "new", {user_id: user.id}
 			expect(response).to render_template("new")
 		end
 
 		it "assigns identifies the correct User" do
-			user = FactoryGirl.create(:valid_user)
-			get "new", {user_id: user.id}
 			expect(assigns(:user).id).to eq(user.id)
 		end
 
 		it "assigns an empty instance of Todo" do
-			user = FactoryGirl.create(:valid_user)
-			get "new", {user_id: user.id}
 			expect(assigns(:todo)).to be_a Todo
 		end
 	end
 
 	describe "#create" do
-		context "with valid todo info" do
-			before(:each) do
-				@user = FactoryGirl.create(:valid_user)
-				#stubbing current_user helper method!
-				allow(controller).to receive(:current_user) {@user}
-			end
+		before(:each) do
+			#stubbing current_user helper method!
+			allow(controller).to receive(:current_user) {user}
+		end
 
+		context "with valid todo info" do
 			#note how params are passed in this POST!
-			subject {post "create", {user_id: @user.id, todo: FactoryGirl.attributes_for(:valid_todo)}}
+			subject {post "create", {user_id: user.id, todo: FactoryGirl.attributes_for(:valid_todo)}}
 
 			it "creates a new todo" do
 				expect{subject}.to change(Todo, :count).by(1)
@@ -43,12 +46,7 @@ RSpec.describe TodosController, :type => :controller do
 		end
 
 		context "with invalid todo info" do
-			before(:each) do
-				@user = FactoryGirl.create(:valid_user)
-				allow(controller).to receive(:current_user) {@user}
-			end
-
-			subject {post "create", {user_id: @user.id, todo: FactoryGirl.attributes_for(:invalid_todo)}}
+			subject {post "create", {user_id: user.id, todo: FactoryGirl.attributes_for(:invalid_todo)}}
 
 			it "does not create a new todo" do
 				expect{subject}.not_to change(Todo, :count)
@@ -62,9 +60,6 @@ RSpec.describe TodosController, :type => :controller do
 	end
 
 	describe "#edit" do
-		#do not place lets or subjects in before hooks, it'd be redundant!
-		let(:user) { FactoryGirl.create(:valid_user) }
-		let(:todo) { FactoryGirl.create(:valid_todo, user_id: user.id) }
 		subject {get "edit", {user_id: user.id, id: todo.id}}
 
 		context "with valid info" do
@@ -82,35 +77,35 @@ RSpec.describe TodosController, :type => :controller do
 		end
 
 		context "with invalid info" do
-			it "redirects to todo#show" do
+			before(:each) do
 				allow(controller).to receive(:current_user) {nil}
 				subject
+			end
+
+			it "redirects to todo#show" do
 				expect(response).to redirect_to(:action => :show, :user_id => user.id, :id => todo.id)
 			end
 
 			it "displays a notice unless logged in" do
-				allow(controller).to receive(:current_user) {nil}
-				subject
 				expect(flash[:notice]).to have_content("Access forbidden")
 			end
 		end
 	end
 
 	describe "#update" do
+		subject { patch "update", {user_id: user.id, id: todo.id, todo: {title: 'Updated Title'}} }
+
 		context "with valid info" do
 			it "updates the todo" do
-				user = FactoryGirl.create(:valid_user)
-				todo = FactoryGirl.create(:valid_todo, user_id: user.id)
 				expect{
-					patch "update", {user_id: user.id, id: todo.id, todo: {title: 'Updated Title'}}
+					subject
+					#make sure to #reload so changes are saved!
 					todo.reload
 				}.to change(todo, :title).to("Updated Title")
 			end
 
 			it "redirects to todo#show" do
-				user = FactoryGirl.create(:valid_user)
-				todo = FactoryGirl.create(:valid_todo, user_id: user.id)
-				patch "update", {user_id: user.id, id: todo.id, todo: {title: 'Updated Title'}}
+				subject
 				#NEED TO CALL redirect_to ON response!! If called on above line as 'subject'
 				#will give error "Expected response to be a <redirect>, but was <200>"
 				expect(response).to redirect_to(:action => :show, user_id: user.id, :id => todo.id)
